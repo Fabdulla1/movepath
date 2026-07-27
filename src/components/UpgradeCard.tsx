@@ -16,7 +16,7 @@ export function UpgradeCard({
       <p className="eyebrow">MovePath Plus</p>
       <h2>{title}</h2>
       <p>{description}</p>
-      <p className="price-line">One-time purchase: $12.99</p>
+      <p className="price-line">One-time purchase: $4.99</p>
       <ul className="feature-list">
         <li>Calendar export</li>
         <li>Premium printable relocation plan</li>
