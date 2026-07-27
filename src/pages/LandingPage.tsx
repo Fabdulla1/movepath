@@ -1,4 +1,5 @@
 import { usToGermanyRulePack } from '../data/routes/us-to-germany'
+import { UpgradeCard } from '../components/UpgradeCard'
 
 type LandingPageProps = {
   onStart: () => void
@@ -54,6 +55,10 @@ export function LandingPage({ onStart, onResume, hasPlan }: LandingPageProps) {
             </p>
           </article>
         </div>
+      </section>
+
+      <section className="content-band">
+        <UpgradeCard />
       </section>
 
       <section className="disclaimer" aria-label="Informational disclaimer">

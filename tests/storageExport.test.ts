@@ -29,6 +29,9 @@ describe('storage and export behavior', () => {
       completedTaskIds: ['passport-validity'],
       generatedAt: '2026-07-27T00:00:00.000Z',
       routeId: 'us-to-germany',
+      customTasks: [],
+      taskAssignments: {},
+      license: null,
     }
 
     saveState(state, storage)
@@ -45,8 +48,22 @@ describe('storage and export behavior', () => {
         completedTaskIds: ['passport-validity'],
         generatedAt: '2026-07-27T00:00:00.000Z',
         routeId: 'us-to-germany',
+        customTasks: [],
+        taskAssignments: {},
+        license: {
+          schemaVersion: 2,
+          plan: 'plus',
+          purchaseEmail: 'buyer@example.com',
+          licenseKey: 'secret-key',
+          installationId: 'installation-1',
+          instanceId: 'instance-1',
+          instanceName: 'MovePath Browser abcd1234',
+          activatedAt: '2026-07-27T00:00:00.000Z',
+          lastValidatedAt: '2026-07-27T00:00:00.000Z',
+          offlineValidUntil: '2026-08-03T00:00:00.000Z',
+        },
       },
-      tasks,
+      tasks.map((task) => ({ ...task, source: 'official', assignment: 'unassigned' })),
     )
 
     expect(exported.applicationVersion).toBe('0.1.0')
@@ -55,6 +72,7 @@ describe('storage and export behavior', () => {
     expect(exported.completionState['passport-validity']).toBe(true)
     expect(exported).not.toHaveProperty('schemaVersion')
     expect(exported).not.toHaveProperty('generatedAt')
+    expect(JSON.stringify(exported)).not.toContain('secret-key')
   })
 })
 

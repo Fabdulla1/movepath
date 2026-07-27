@@ -1,4 +1,4 @@
-export const STORAGE_SCHEMA_VERSION = 1 as const
+export const STORAGE_SCHEMA_VERSION = 2 as const
 
 export type StorageSchemaVersion = typeof STORAGE_SCHEMA_VERSION
 
@@ -55,6 +55,20 @@ export type OfficialSource = {
   url: string
 }
 
+export type PremiumFeature =
+  | 'calendar-export'
+  | 'premium-print'
+  | 'custom-tasks'
+  | 'household-assignments'
+
+export type HouseholdAssignment =
+  | 'unassigned'
+  | 'me'
+  | 'partner'
+  | 'both'
+  | 'child-or-family'
+  | 'household'
+
 export type RelativeDueDate = {
   relativeTo: 'arrival'
   offsetDays: number
@@ -81,12 +95,56 @@ export type GeneratedChecklistTask = Omit<ChecklistRule, 'appliesWhen' | 'dueDat
   completed: boolean
 }
 
+export type AppChecklistTask = {
+  id: string
+  source: 'official' | 'custom'
+  title: string
+  description: string
+  category: ChecklistCategory
+  dueDate?: string
+  completed: boolean
+  documents: string[]
+  officialSources: OfficialSource[]
+  applicabilityNote?: string
+  details?: string
+  lastVerified?: string
+  order: number
+  assignment: HouseholdAssignment
+}
+
+export type CustomTask = {
+  id: string
+  title: string
+  description: string
+  category: ChecklistCategory
+  dueDate: string
+  completed: boolean
+  createdAt: string
+  updatedAt: string
+ }
+
+export type StoredMovePathLicense = {
+  schemaVersion: number
+  plan: 'plus'
+  purchaseEmail: string
+  licenseKey: string
+  installationId: string
+  instanceId: string
+  instanceName: string
+  activatedAt: string
+  lastValidatedAt: string
+  offlineValidUntil: string
+}
+
 export type StoredApplicationState = {
   schemaVersion: StorageSchemaVersion
   profile: Partial<UserRelocationProfile> | null
   completedTaskIds: string[]
   generatedAt: string | null
   routeId: string
+  customTasks: CustomTask[]
+  taskAssignments: Record<string, HouseholdAssignment>
+  license: StoredMovePathLicense | null
 }
 
 export type RouteRulePack = {
@@ -104,4 +162,6 @@ export type ExportedPlan = {
   userAnswers: Partial<UserRelocationProfile> | null
   generatedTaskIds: string[]
   completionState: Record<string, boolean>
+  customTasks: Array<Pick<CustomTask, 'id' | 'title' | 'description' | 'category' | 'dueDate' | 'completed'>>
+  assignments: Record<string, HouseholdAssignment>
 }

@@ -1,30 +1,63 @@
 import { useMemo, useState } from 'react'
 import { RecommendedServices } from '../components/RecommendedServices'
+import { PremiumGate } from '../components/PremiumGate'
+import { UpgradeCard } from '../components/UpgradeCard'
 import { categoryLabels, categoryOrder } from '../domain/labels'
-import type { ChecklistCategory, GeneratedChecklistTask, StoredApplicationState } from '../domain/types'
+import type { Entitlements } from '../domain/entitlement'
+import type {
+  AppChecklistTask,
+  ChecklistCategory,
+  CustomTask,
+  HouseholdAssignment,
+  StoredApplicationState,
+} from '../domain/types'
 import { buildExportedPlan, downloadJson } from '../services/exportPlan'
+import { createCustomTask } from '../premium/customTasks'
+import { assignmentLabels } from '../premium/householdAssignments'
+import { buildCalendarIcs, downloadCalendar } from '../premium/calendarExport'
+import { beginPremiumPrint } from '../premium/premiumPrint'
 import { formatDate } from '../utils/date'
 
 type CompletionFilter = 'all' | 'open' | 'complete'
 
 type ChecklistPageProps = {
   state: StoredApplicationState
-  tasks: GeneratedChecklistTask[]
+  tasks: AppChecklistTask[]
+  entitlements: Entitlements
+  licenseMessage: string | null
   onToggleTask: (taskId: string, completed: boolean) => void
+  onAssignTask: (taskId: string, assignment: HouseholdAssignment) => void
+  onAddCustomTask: (task: CustomTask) => void
+  onEditCustomTask: (
+    taskId: string,
+    input: Omit<CustomTask, 'id' | 'createdAt' | 'updatedAt'>,
+  ) => void
+  onDeleteCustomTask: (taskId: string) => void
+  onValidatePlus: () => Promise<boolean>
   onEditAnswers: () => void
+  onOpenActivation: () => void
   onReset: () => void
 }
 
 export function ChecklistPage({
   state,
   tasks,
+  entitlements,
+  licenseMessage,
   onToggleTask,
+  onAssignTask,
+  onAddCustomTask,
+  onEditCustomTask,
+  onDeleteCustomTask,
+  onValidatePlus,
   onEditAnswers,
+  onOpenActivation,
   onReset,
 }: ChecklistPageProps) {
   const [search, setSearch] = useState('')
   const [completion, setCompletion] = useState<CompletionFilter>('all')
   const [category, setCategory] = useState<ChecklistCategory | 'all'>('all')
+  const [assignment, setAssignment] = useState<HouseholdAssignment | 'all'>('all')
 
   const completedCount = tasks.filter((task) => task.completed).length
   const remainingCount = tasks.length - completedCount
@@ -41,6 +74,7 @@ export function ChecklistPage({
           task.category,
           task.documents.join(' '),
           task.officialSources.map((source) => source.label).join(' '),
+          assignmentLabels[task.assignment],
         ]
           .join(' ')
           .toLowerCase()
@@ -50,12 +84,26 @@ export function ChecklistPage({
         (completion === 'complete' && task.completed) ||
         (completion === 'open' && !task.completed)
       const matchesCategory = category === 'all' || task.category === category
-      return matchesSearch && matchesCompletion && matchesCategory
+      const matchesAssignment = assignment === 'all' || task.assignment === assignment
+      return matchesSearch && matchesCompletion && matchesCategory && matchesAssignment
     })
-  }, [tasks, search, completion, category])
+  }, [tasks, search, completion, category, assignment])
 
   function exportPlan() {
     downloadJson('movepath-us-to-germany-plan.json', buildExportedPlan(state, tasks))
+  }
+
+  async function exportCalendar() {
+    const ok = await onValidatePlus()
+    if (!ok) return
+    const bytes = buildCalendarIcs(tasks, state.profile ?? {})
+    downloadCalendar('movepath-plus-calendar.ics', bytes)
+  }
+
+  async function premiumPrint() {
+    const ok = await onValidatePlus()
+    if (!ok) return
+    beginPremiumPrint()
   }
 
   function resetPlan() {
@@ -73,6 +121,14 @@ export function ChecklistPage({
           the responsible authority before relying on any administrative step.
         </p>
       </section>
+
+      {entitlements.plan === 'plus' ? (
+        <p className="status" role="status">
+          MovePath Plus is active. {licenseMessage || 'Premium features are available on this browser.'}
+        </p>
+      ) : (
+        <UpgradeCard compact title="MovePath Plus is ready when you are" />
+      )}
 
       <section className="summary-panel" aria-label="Checklist summary">
         <div>
@@ -111,13 +167,43 @@ export function ChecklistPage({
             ))}
           </select>
         </label>
+        <label>
+          Assignment
+          <select value={assignment} onChange={(event) => setAssignment(event.target.value as HouseholdAssignment | 'all')}>
+            <option value="all">All assignments</option>
+            {Object.entries(assignmentLabels).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+        </label>
         <div className="toolbar__actions">
-          <button className="button button--secondary" type="button" onClick={() => { setSearch(''); setCompletion('all'); setCategory('all') }}>Clear filters</button>
+          <button className="button button--secondary" type="button" onClick={() => { setSearch(''); setCompletion('all'); setCategory('all'); setAssignment('all') }}>Clear filters</button>
           <button className="button button--secondary" type="button" onClick={() => window.print()}>Print</button>
           <button className="button button--secondary" type="button" onClick={exportPlan}>Export JSON</button>
+          {entitlements.has('calendar-export') ? (
+            <button className="button button--secondary" type="button" onClick={() => void exportCalendar()}>
+              Export calendar
+            </button>
+          ) : (
+            <button className="button button--secondary" type="button" onClick={onOpenActivation}>
+              Unlock MovePath Plus
+            </button>
+          )}
+          {entitlements.has('premium-print') ? (
+            <button className="button button--secondary" type="button" onClick={() => void premiumPrint()}>
+              Premium print
+            </button>
+          ) : null}
           <button className="button button--secondary" type="button" onClick={onEditAnswers}>Edit answers</button>
           <button className="button button--danger" type="button" onClick={resetPlan}>Reset plan</button>
         </div>
+      </section>
+
+      <section className="task-section no-print">
+        <h2>Custom tasks</h2>
+        <PremiumGate entitlements={entitlements} feature="custom-tasks" title="Custom tasks">
+          <CustomTaskEditor tasks={state.customTasks} onAddCustomTask={onAddCustomTask} onEditCustomTask={onEditCustomTask} onDeleteCustomTask={onDeleteCustomTask} />
+        </PremiumGate>
       </section>
 
       <p className="status" role="status">
@@ -133,7 +219,13 @@ export function ChecklistPage({
               <h2 id={`${section}-heading`}>{categoryLabels[section]}</h2>
               <div className="task-list">
                 {sectionTasks.map((task) => (
-                  <TaskCard key={task.id} task={task} onToggle={onToggleTask} />
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    canAssign={entitlements.has('household-assignments')}
+                    onAssignTask={onAssignTask}
+                    onToggle={onToggleTask}
+                  />
                 ))}
               </div>
             </section>
@@ -146,6 +238,12 @@ export function ChecklistPage({
         </section>
       )}
 
+      {entitlements.plan === 'free' ? (
+        <div className="task-section">
+          <UpgradeCard compact title="Ready for premium planning?" />
+        </div>
+      ) : null}
+
       <RecommendedServices />
     </main>
   )
@@ -153,9 +251,13 @@ export function ChecklistPage({
 
 function TaskCard({
   task,
+  canAssign,
+  onAssignTask,
   onToggle,
 }: {
-  task: GeneratedChecklistTask
+  task: AppChecklistTask
+  canAssign: boolean
+  onAssignTask: (taskId: string, assignment: HouseholdAssignment) => void
   onToggle: (taskId: string, completed: boolean) => void
 }) {
   const [open, setOpen] = useState(false)
@@ -176,6 +278,21 @@ function TaskCard({
       </div>
       <h3>{task.title}</h3>
       <p>{task.description}</p>
+      {canAssign ? (
+        <label className="inline-field">
+          Assignment
+          <select
+            value={task.assignment}
+            onChange={(event) => onAssignTask(task.id, event.target.value as HouseholdAssignment)}
+          >
+            {Object.entries(assignmentLabels).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+        </label>
+      ) : (
+        <p className="status">Assignment: {assignmentLabels[task.assignment]}</p>
+      )}
       <button
         className="details-toggle no-print"
         type="button"
@@ -188,25 +305,124 @@ function TaskCard({
       <div id={detailsId} className={`task-details ${open ? 'is-open' : ''}`}>
         {task.applicabilityNote ? <p><strong>Why this appears:</strong> {task.applicabilityNote}</p> : null}
         {task.details ? <p>{task.details}</p> : null}
-        <div>
-          <strong>Useful documents</strong>
-          <ul>
-            {task.documents.map((document) => <li key={document}>{document}</li>)}
-          </ul>
-        </div>
-        <div>
-          <strong>Official sources</strong>
-          <ul>
-            {task.officialSources.map((source) => (
-              <li key={source.url}>
-                <a href={source.url} target="_blank" rel="noreferrer">{source.label}</a>
-                <span className="print-url"> - {source.url}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <p className="verified">Last verified: {task.lastVerified}</p>
+        {task.documents.length ? (
+          <div>
+            <strong>Useful documents</strong>
+            <ul>
+              {task.documents.map((document) => <li key={document}>{document}</li>)}
+            </ul>
+          </div>
+        ) : null}
+        {task.officialSources.length ? (
+          <div>
+            <strong>Official sources</strong>
+            <ul>
+              {task.officialSources.map((source) => (
+                <li key={source.url}>
+                  <a href={source.url} target="_blank" rel="noreferrer">{source.label}</a>
+                  <span className="print-url"> - {source.url}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        {task.lastVerified ? <p className="verified">Last verified: {task.lastVerified}</p> : null}
       </div>
     </article>
+  )
+}
+
+function CustomTaskEditor({
+  tasks,
+  onAddCustomTask,
+  onEditCustomTask,
+  onDeleteCustomTask,
+}: {
+  tasks: CustomTask[]
+  onAddCustomTask: (task: CustomTask) => void
+  onEditCustomTask: (
+    taskId: string,
+    input: Omit<CustomTask, 'id' | 'createdAt' | 'updatedAt'>,
+  ) => void
+  onDeleteCustomTask: (taskId: string) => void
+}) {
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [dueDate, setDueDate] = useState('')
+  const [category, setCategory] = useState<ChecklistCategory>('first-month')
+
+  function addTask(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!title.trim() || !dueDate) return
+    onAddCustomTask(createCustomTask({ title, description, dueDate, category }))
+    setTitle('')
+    setDescription('')
+    setDueDate('')
+    setCategory('first-month')
+  }
+
+  return (
+    <div className="custom-task-editor">
+      <form className="questionnaire" onSubmit={addTask}>
+        <div className="form-grid">
+          <label>
+            Task title
+            <input value={title} onChange={(event) => setTitle(event.target.value)} />
+          </label>
+          <label>
+            Due date
+            <input type="date" value={dueDate} onChange={(event) => setDueDate(event.target.value)} />
+          </label>
+          <label>
+            Timeline category
+            <select value={category} onChange={(event) => setCategory(event.target.value as ChecklistCategory)}>
+              {categoryOrder.map((value) => (
+                <option key={value} value={value}>{categoryLabels[value]}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Description
+            <input value={description} onChange={(event) => setDescription(event.target.value)} />
+          </label>
+        </div>
+        <div className="actions">
+          <button className="button button--primary" type="submit">Add custom task</button>
+        </div>
+      </form>
+      {tasks.length ? (
+        <div className="task-list">
+          {tasks.map((task) => (
+            <article key={task.id} className="task-card">
+              <h3>{task.title}</h3>
+              <p>{task.description || 'No description yet.'}</p>
+              <p className="status">{formatDate(task.dueDate)} · {categoryLabels[task.category]}</p>
+              <div className="actions">
+                <button
+                  className="button button--secondary"
+                  type="button"
+                  onClick={() =>
+                    onEditCustomTask(task.id, {
+                      title: task.title,
+                      description: task.description,
+                      dueDate: task.dueDate,
+                      category: task.category,
+                      completed: task.completed,
+                    })
+                  }
+                >
+                  Save current details
+                </button>
+                <button className="button button--danger" type="button" onClick={() => onDeleteCustomTask(task.id)}>
+                  Delete
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p className="status">No custom tasks yet.</p>
+      )}
+    </div>
   )
 }
