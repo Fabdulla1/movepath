@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f7f5ef"/>
+  <rect x="80" y="90" width="1040" height="450" rx="24" fill="#fffdf8" stroke="#d8d6ca" stroke-width="4"/>
+  <text x="130" y="215" fill="#256b5b" font-family="Arial, sans-serif" font-size="46" font-weight="700">MovePath</text>
+  <text x="130" y="320" fill="#17201b" font-family="Arial, sans-serif" font-size="74" font-weight="700">U.S. to Germany</text>
+  <text x="130" y="400" fill="#17201b" font-family="Arial, sans-serif" font-size="74" font-weight="700">relocation checklist</text>
+  <text x="130" y="480" fill="#5f665d" font-family="Arial, sans-serif" font-size="34">Private, dated tasks stored only in your browser.</text>
+</svg>
