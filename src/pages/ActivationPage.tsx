@@ -43,6 +43,7 @@ export function ActivationPage(props: ActivationPageProps) {
           <p className="fine-print">
             Test mode status: {monetizationConfig.isTestModeUrl ? 'Configured with the provided test checkout URL.' : 'Checkout URL is not the provided test URL.'}
           </p>
+          <p className="fine-print">Support: {monetizationConfig.supportEmail}</p>
         </section>
         <LicenseStatusPanel
           license={props.license}

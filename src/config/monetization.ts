@@ -1,5 +1,6 @@
 const DEFAULT_TEST_CHECKOUT_URL =
-  'https://movepath.lemonsqueezy.com/checkout/buy/8c5089a8-7ffc-4307-87f0-ae8b10fd9c59?media=0&logo=0'
+  'https://movepath.lemonsqueezy.com/checkout/buy/8c5089a8-7ffc-4307-87f0-ae8b10fd9c59'
+const DEFAULT_SUPPORT_EMAIL = 'abdulla11099@gmail.com'
 
 export type MonetizationConfig = {
   checkoutUrl: string
@@ -15,9 +16,9 @@ export type MonetizationConfig = {
 export function getMonetizationConfig(): MonetizationConfig {
   const checkoutUrl =
     normalizeString(import.meta.env.VITE_LEMON_CHECKOUT_URL) || DEFAULT_TEST_CHECKOUT_URL
-  const storeId = normalizeString(import.meta.env.VITE_LEMON_STORE_ID)
-  const productId = normalizeString(import.meta.env.VITE_LEMON_PRODUCT_ID)
-  const variantId = normalizeString(import.meta.env.VITE_LEMON_VARIANT_ID)
+  const storeId = normalizeNumericId(import.meta.env.VITE_LEMON_STORE_ID)
+  const productId = normalizeNumericId(import.meta.env.VITE_LEMON_PRODUCT_ID)
+  const variantId = normalizeNumericId(import.meta.env.VITE_LEMON_VARIANT_ID)
   const supportEmail = normalizeString(import.meta.env.VITE_SUPPORT_EMAIL)
 
   const missing = [
@@ -29,7 +30,7 @@ export function getMonetizationConfig(): MonetizationConfig {
 
   return {
     checkoutUrl,
-    supportEmail: supportEmail || 'support@example.com',
+    supportEmail: supportEmail || DEFAULT_SUPPORT_EMAIL,
     storeId,
     productId,
     variantId,
@@ -43,4 +44,8 @@ export const monetizationConfig = getMonetizationConfig()
 
 function normalizeString(value: string | undefined) {
   return value?.trim() ?? ''
+}
+
+function normalizeNumericId(value: string | undefined) {
+  return normalizeString(value).replace(/^#/, '')
 }

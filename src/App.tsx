@@ -81,7 +81,6 @@ function App() {
         onDeleteCustomTask={deleteCustomTask}
         onValidatePlus={() => refreshLicense(true)}
         onEditAnswers={() => navigate('questionnaire', setView)}
-        onOpenActivation={() => navigate('activate', setView)}
         onReset={() => {
           reset()
           navigate('landing', setView)

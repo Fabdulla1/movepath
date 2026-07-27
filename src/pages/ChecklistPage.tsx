@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { RecommendedServices } from '../components/RecommendedServices'
 import { PremiumGate } from '../components/PremiumGate'
 import { UpgradeCard } from '../components/UpgradeCard'
+import { monetizationConfig } from '../config/monetization'
 import { categoryLabels, categoryOrder } from '../domain/labels'
 import type { Entitlements } from '../domain/entitlement'
 import type {
@@ -35,7 +36,6 @@ type ChecklistPageProps = {
   onDeleteCustomTask: (taskId: string) => void
   onValidatePlus: () => Promise<boolean>
   onEditAnswers: () => void
-  onOpenActivation: () => void
   onReset: () => void
 }
 
@@ -51,7 +51,6 @@ export function ChecklistPage({
   onDeleteCustomTask,
   onValidatePlus,
   onEditAnswers,
-  onOpenActivation,
   onReset,
 }: ChecklistPageProps) {
   const [search, setSearch] = useState('')
@@ -185,9 +184,14 @@ export function ChecklistPage({
               Export calendar
             </button>
           ) : (
-            <button className="button button--secondary" type="button" onClick={onOpenActivation}>
+            <a
+              className="button button--secondary"
+              href={monetizationConfig.checkoutUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
               Unlock MovePath Plus
-            </button>
+            </a>
           )}
           {entitlements.has('premium-print') ? (
             <button className="button button--secondary" type="button" onClick={() => void premiumPrint()}>

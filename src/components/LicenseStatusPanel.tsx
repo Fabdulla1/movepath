@@ -1,3 +1,4 @@
+import { monetizationConfig } from '../config/monetization'
 import type { StoredMovePathLicense } from '../domain/types'
 
 type LicenseStatusPanelProps = {
@@ -28,6 +29,7 @@ export function LicenseStatusPanel({
       <p className="status" role="status" aria-live="polite">
         {error || message || (license ? 'MovePath Plus is available on this browser.' : 'MovePath Plus is not active on this browser.')}
       </p>
+      <p className="fine-print">Support: {monetizationConfig.supportEmail}</p>
       {license ? (
         <>
           <dl className="license-grid">

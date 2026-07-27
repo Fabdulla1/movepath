@@ -4,8 +4,6 @@ type LegalPageProps = {
   kind: 'privacy' | 'terms' | 'refund' | 'contact' | 'disclaimer'
 }
 
-const californiaPlaceholder = '[California operator legal name]'
-
 export function LegalPage({ kind }: LegalPageProps) {
   const content = {
     privacy: {
@@ -20,7 +18,7 @@ export function LegalPage({ kind }: LegalPageProps) {
     terms: {
       title: 'Terms of Use',
       body: [
-        `MovePath is operated from California, United States by ${californiaPlaceholder}.`,
+        'MovePath is operated as an independent project based in the United States.',
         'MovePath provides organizational relocation information and software features for personal planning. It does not provide legal, immigration, tax, financial, or insurance advice.',
         'MovePath Plus is a one-time purchase that unlocks client-side premium features after successful license activation and validation.',
       ],
@@ -28,15 +26,15 @@ export function LegalPage({ kind }: LegalPageProps) {
     refund: {
       title: 'Refund Policy',
       body: [
-        'Refund terms should be reviewed and completed with the operator’s final policy before live launch.',
-        'Until finalized, use the configured support contact for refund questions related to MovePath Plus test purchases.',
+        'Refund terms should be reviewed and completed with the operator\'s final policy before live launch.',
+        `Until finalized, use ${monetizationConfig.supportEmail} for refund questions related to MovePath Plus test purchases.`,
       ],
     },
     contact: {
       title: 'Contact',
       body: [
         `Support email: ${monetizationConfig.supportEmail}`,
-        `Operator legal details placeholder: ${californiaPlaceholder}`,
+        'Operator legal details are not listed on this page.',
       ],
     },
     disclaimer: {

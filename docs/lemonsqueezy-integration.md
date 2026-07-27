@@ -24,7 +24,7 @@ Checkout is hosted by Lemon Squeezy. Browser activation, validation, and deactiv
 
 The current implementation uses this provided checkout URL for every MovePath Plus purchase CTA:
 
-`https://movepath.lemonsqueezy.com/checkout/buy/8c5089a8-7ffc-4307-87f0-ae8b10fd9c59?media=0&logo=0`
+`https://movepath.lemonsqueezy.com/checkout/buy/8c5089a8-7ffc-4307-87f0-ae8b10fd9c59`
 
 The URL itself does not visibly encode "test mode", but Lemon Squeezy’s docs state that test and live products have different checkout URLs and different IDs. Treat this as Test Mode only if it was copied while Lemon Squeezy Test Mode was active.
 

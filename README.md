@@ -90,9 +90,9 @@ When the paid flow is approved:
 2. Replace checkout URL, store ID, product ID, and variant ID with live values.
 3. Re-run checkout, activation, validation, restore, and deactivation tests.
 
-## Legal Placeholders
+## Legal Copy
 
-The current implementation still needs final operator legal details and support contact details before a production live-mode launch. The app intentionally does not invent a legal entity name, street address, or phone number.
+The app keeps legal and contact copy neutral until the project has confirmed operator details. It does not invent a legal entity name, street address, or phone number.
 
 ## Troubleshooting
 
