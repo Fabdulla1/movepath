@@ -19,13 +19,21 @@ describe('LicenseActivationForm', () => {
     render(<LicenseActivationForm onActivate={onActivate} isActivating={false} />)
 
     fireEvent.change(screen.getByLabelText('Purchase email'), {
-      target: { value: 'buyer@example.com' },
+      target: { value: 'fixture@example.invalid' },
     })
     fireEvent.change(screen.getByLabelText('License key'), {
-      target: { value: 'license-key-1' },
+      target: { value: 'fixture-license-key' },
     })
     fireEvent.submit(screen.getByRole('button', { name: 'Activate MovePath Plus' }))
 
-    expect(onActivate).toHaveBeenCalledWith('buyer@example.com', 'license-key-1')
+    expect(onActivate).toHaveBeenCalledWith('fixture@example.invalid', 'fixture-license-key')
+  })
+
+  it('links to Lemon Squeezy My Orders for purchase restoration', () => {
+    render(<LicenseActivationForm onActivate={vi.fn(async () => false)} isActivating={false} />)
+
+    const link = screen.getByRole('link', { name: 'Find my order' })
+    expect(link.getAttribute('href')).toBe('https://app.lemonsqueezy.com/my-orders')
+    expect(link.getAttribute('target')).toBe('_blank')
   })
 })

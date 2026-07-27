@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { ConfirmationDialog } from '../components/ConfirmationDialog'
 import { RecommendedServices } from '../components/RecommendedServices'
 import { PremiumGate } from '../components/PremiumGate'
 import { UpgradeCard } from '../components/UpgradeCard'
@@ -53,6 +54,7 @@ export function ChecklistPage({
   onEditAnswers,
   onReset,
 }: ChecklistPageProps) {
+  const [resetDialogOpen, setResetDialogOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [completion, setCompletion] = useState<CompletionFilter>('all')
   const [category, setCategory] = useState<ChecklistCategory | 'all'>('all')
@@ -106,8 +108,12 @@ export function ChecklistPage({
   }
 
   function resetPlan() {
-    const confirmed = window.confirm('Reset all locally stored MovePath data in this browser?')
-    if (confirmed) onReset()
+    setSearch('')
+    setCompletion('all')
+    setCategory('all')
+    setAssignment('all')
+    setResetDialogOpen(false)
+    onReset()
   }
 
   return (
@@ -199,7 +205,9 @@ export function ChecklistPage({
             </button>
           ) : null}
           <button className="button button--secondary" type="button" onClick={onEditAnswers}>Edit answers</button>
-          <button className="button button--danger" type="button" onClick={resetPlan}>Reset plan</button>
+          <button className="button button--danger" type="button" onClick={() => setResetDialogOpen(true)}>
+            Reset relocation plan
+          </button>
         </div>
       </section>
 
@@ -249,6 +257,20 @@ export function ChecklistPage({
       ) : null}
 
       <RecommendedServices />
+      {resetDialogOpen ? (
+        <ConfirmationDialog
+          title="Reset relocation plan?"
+          description="Delete your questionnaire answers, checklist progress, custom tasks, and household assignments. Your MovePath Plus activation will remain connected to this browser."
+          actions={[
+            {
+              label: 'Reset relocation plan',
+              onClick: resetPlan,
+              variant: 'danger',
+            },
+          ]}
+          onCancel={() => setResetDialogOpen(false)}
+        />
+      ) : null}
     </main>
   )
 }

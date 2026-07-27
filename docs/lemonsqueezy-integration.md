@@ -57,6 +57,16 @@ Result:
 - Premium calendar export and premium print trigger validation before use.
 - Definitive invalid, disabled, expired, or mismatched responses revoke access immediately.
 
+## Reset, Deactivation, and Restore
+
+- Reset relocation plan removes questionnaire answers, checklist progress, custom tasks, and household assignments while preserving the local MovePath Plus activation.
+- Deactivate Plus on this browser calls Lemon Squeezy and releases one activation slot without deleting the free relocation plan.
+- Deactivate Plus and erase all data first attempts remote deactivation, then clears relocation data and locally stored license data.
+- If remote deactivation fails, MovePath keeps the saved license record and warns that the activation may still count toward the five-activation limit.
+- Clearing browser site data or local storage removes MovePath's local activation record. The Lemon Squeezy purchase remains valid and can be restored with the purchase email and license key.
+- Purchase recovery is handled through Lemon Squeezy My Orders: `https://app.lemonsqueezy.com/my-orders`.
+- Checkout redirects and return URLs do not prove purchase; MovePath unlocks Plus only after successful license activation and validation.
+
 ## Test Mode Procedure
 
 1. Obtain the test checkout URL from Lemon Squeezy Share.

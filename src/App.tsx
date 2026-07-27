@@ -38,8 +38,10 @@ function App() {
     activatePlus,
     refreshLicense,
     deactivatePlus,
+    deactivatePlusAndEraseAllData,
     clearLocalLicenseData,
-    reset,
+    clearAllLocalData,
+    resetRelocationPlan,
   } = useStoredState()
   const hasPlan = isCompleteProfile(state.profile)
   const [view, setView] = useState<View>(() => resolveViewFromHash(hasPlan))
@@ -82,7 +84,7 @@ function App() {
         onValidatePlus={() => refreshLicense(true)}
         onEditAnswers={() => navigate('questionnaire', setView)}
         onReset={() => {
-          reset()
+          resetRelocationPlan()
           navigate('landing', setView)
         }}
       />,
@@ -100,7 +102,13 @@ function App() {
         onActivate={activatePlus}
         onValidate={() => refreshLicense(true)}
         onDeactivate={deactivatePlus}
+        onDeactivateAndEraseAll={async () => {
+          const ok = await deactivatePlusAndEraseAllData()
+          if (ok) navigate('landing', setView)
+          return ok
+        }}
         onClearLocal={clearLocalLicenseData}
+        onClearAllLocalData={clearAllLocalData}
       />,
     )
   }

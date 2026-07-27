@@ -55,8 +55,13 @@ export function LicenseActivationForm({
         <button className="button button--primary" type="submit" disabled={isActivating}>
           {isActivating ? 'Activating...' : 'Activate MovePath Plus'}
         </button>
-        <a className="button button--secondary" href="https://movepath.online/#activate">
-          Restore MovePath Plus
+        <a
+          className="button button--secondary"
+          href="https://app.lemonsqueezy.com/my-orders"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Find my order
         </a>
       </div>
     </form>

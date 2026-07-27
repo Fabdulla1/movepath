@@ -17,7 +17,13 @@ import type {
   StoredApplicationState,
   UserRelocationProfile,
 } from '../domain/types'
-import { clearState, freshState, loadState, saveState } from '../services/storage'
+import {
+  clearStoredLicenseState,
+  freshState,
+  loadState,
+  resetRelocationPlanState,
+  saveState,
+} from '../services/storage'
 import { customTaskToAppTask, updateCustomTask } from '../premium/customTasks'
 
 export function useStoredState() {
@@ -101,11 +107,17 @@ export function useStoredState() {
     })
   }
 
-  function reset() {
-    clearState()
+  function resetRelocationPlan() {
+    setState((current) => resetRelocationPlanState(current))
+    setLicenseMessage(null)
+    setLicenseError(null)
+  }
+
+  function clearAllLocalData() {
     setState(freshState())
     setLicenseMessage(null)
     setLicenseError(null)
+    validatedThisSession.current = false
   }
 
   function upsertCustomTask(task: CustomTask) {
@@ -209,7 +221,7 @@ export function useStoredState() {
       const result = await validateLicense(state.license.licenseKey, state.license.instanceId)
       const evaluated = evaluateValidation(state.license, result)
       if (!evaluated.ok) {
-        setState((current) => ({ ...current, license: null }))
+        setState((current) => clearStoredLicenseState(current))
         setLicenseError(evaluated.message)
         setLicenseMessage(null)
         return false
@@ -225,7 +237,7 @@ export function useStoredState() {
         setLicenseMessage('MovePath Plus is temporarily using the last successful validation.')
         return true
       }
-      setState((current) => ({ ...current, license: null }))
+      setState((current) => clearStoredLicenseState(current))
       setLicenseError(asUserMessage(error))
       return false
     } finally {
@@ -254,8 +266,36 @@ export function useStoredState() {
     }
   }
 
+  async function deactivatePlusAndEraseAllData() {
+    if (!state.license) {
+      clearAllLocalData()
+      return true
+    }
+
+    setLicenseError(null)
+    setLicenseMessage('Deactivating this browser before clearing local data...')
+    try {
+      const response = await deactivateLicense(state.license.licenseKey, state.license.instanceId)
+      if (!response.deactivated || response.error) {
+        setLicenseError(
+          response.error ||
+            'MovePath Plus could not be deactivated. This browser may still count toward the activation limit.',
+        )
+        setLicenseMessage(null)
+        return false
+      }
+      clearAllLocalData()
+      setLicenseMessage('MovePath Plus was deactivated and local data was erased.')
+      return true
+    } catch (error) {
+      setLicenseError(asUserMessage(error))
+      setLicenseMessage(null)
+      return false
+    }
+  }
+
   function clearLocalLicenseData() {
-    setState((current) => ({ ...current, license: null }))
+    setState((current) => clearStoredLicenseState(current))
     validatedThisSession.current = false
   }
 
@@ -277,8 +317,10 @@ export function useStoredState() {
     activatePlus,
     refreshLicense,
     deactivatePlus,
+    deactivatePlusAndEraseAllData,
     clearLocalLicenseData,
-    reset,
+    clearAllLocalData,
+    resetRelocationPlan,
   }
 }
 

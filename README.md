@@ -61,14 +61,19 @@ All "Unlock MovePath Plus" buttons open the configured Lemon Squeezy hosted chec
 ## Activation, Validation, and Deactivation
 
 - Activation requires purchase email and license key.
+- Restoration after clearing browser data uses the same activation flow. Customers can retrieve purchase and license details from Lemon Squeezy My Orders.
 - Validation runs after activation, on app open when the last successful validation is older than 24 hours, and before premium export or premium print.
 - Deactivation removes the local entitlement only after Lemon Squeezy confirms success, unless the user explicitly clears local license data.
+- Reset relocation plan clears questionnaire answers, checklist progress, custom tasks, and household assignments while preserving the saved Plus license on that browser.
+- Deactivate Plus and erase all data first attempts to release the browser activation in Lemon Squeezy, then clears both relocation data and local license data.
 
 An offline grace period of seven days is available only after a previous successful activation and validation.
 
 ## Security Limitations
 
 MovePath Plus uses client-side feature gates. That means the UI and local checks can improve access control for a static site, but they are not equivalent to a server-enforced entitlement system. License keys are stored locally after activation because the app has no backend.
+
+Clearing browser cookies and site data or local storage removes MovePath's local activation record. The Lemon Squeezy purchase remains valid, but clearing local data before remote deactivation may leave an activation counted toward the five-device limit. Customers can restore access with their purchase email and license key, and support can help with abandoned activation slots.
 
 ## Test Mode
 
@@ -79,6 +84,8 @@ Keep the first implementation and validation cycle in Lemon Squeezy Test Mode.
 3. Complete a test purchase and collect the generated license key.
 4. Activate the license on `https://movepath.online/#activate`.
 5. Validate premium access, refresh persistence, activation limits, deactivation, and restore flow.
+6. Confirm a normal relocation-plan reset preserves Plus access.
+7. Confirm full erase deactivates remotely before clearing local data.
 
 Do not switch to Live Mode until a separate live product, live variant, and live checkout URL exist.
 

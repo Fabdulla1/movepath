@@ -13,6 +13,20 @@ export const freshState = (): StoredApplicationState => ({
   license: null,
 })
 
+export function resetRelocationPlanState(state: StoredApplicationState): StoredApplicationState {
+  return {
+    ...freshState(),
+    license: state.license,
+  }
+}
+
+export function clearStoredLicenseState(state: StoredApplicationState): StoredApplicationState {
+  return {
+    ...state,
+    license: null,
+  }
+}
+
 export function loadState(storage: Storage | undefined = getStorage()): StoredApplicationState {
   if (!storage) return freshState()
 
@@ -65,6 +79,7 @@ function migrateState(value: unknown): StoredApplicationState {
   if (isStoredApplicationState(value)) return value
   if (!value || typeof value !== 'object') return freshState()
   const candidate = value as Record<string, unknown>
+  const validLicense = isLicense(candidate.license) ? candidate.license : null
 
   if (
     candidate.schemaVersion === 1 &&
@@ -82,11 +97,14 @@ function migrateState(value: unknown): StoredApplicationState {
       routeId: 'us-to-germany',
       customTasks: [],
       taskAssignments: {},
-      license: null,
+      license: validLicense,
     }
   }
 
-  return freshState()
+  return {
+    ...freshState(),
+    license: validLicense,
+  }
 }
 
 function isCustomTask(value: unknown) {

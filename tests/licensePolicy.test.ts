@@ -21,7 +21,7 @@ describe('license policy', () => {
 
   it('accepts a successful activation with matching metadata', () => {
     const result = evaluateActivation(
-      'Buyer@example.com',
+      'Fixture@example.invalid',
       'installation-1',
       'MovePath Browser abcd1234',
       activationResult(),
@@ -29,7 +29,7 @@ describe('license policy', () => {
 
     expect(result.ok).toBe(true)
     if (result.ok) {
-      expect(result.license.purchaseEmail).toBe('buyer@example.com')
+      expect(result.license.purchaseEmail).toBe('fixture@example.invalid')
       expect(result.license.instanceId).toBe('instance-1')
     }
   })
@@ -51,7 +51,7 @@ describe('license policy', () => {
 
   it('rejects the wrong store id', () => {
     const result = evaluateActivation(
-      'buyer@example.com',
+      'fixture@example.invalid',
       'installation-1',
       'MovePath Browser abcd1234',
       activationResult({ meta: { storeId: 999 } }),
@@ -66,7 +66,7 @@ describe('license policy', () => {
 
   it('rejects activation-limit responses', () => {
     const result = evaluateActivation(
-      'buyer@example.com',
+      'fixture@example.invalid',
       'installation-1',
       'MovePath Browser abcd1234',
       activationResult({
@@ -75,11 +75,12 @@ describe('license policy', () => {
       }),
     )
 
-    expect(result).toEqual({
-      ok: false,
-      reason: 'activation-limit',
-      message: 'This license key has reached the activation limit.',
-    })
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.reason).toBe('activation-limit')
+      expect(result.message).toContain('Deactivate MovePath Plus on an older browser or device')
+      expect(result.message).toContain('support@movepath.online')
+    }
   })
 
   it('accepts a successful validation and refreshes grace dates', () => {
@@ -142,7 +143,7 @@ function activationResult(
     licenseKey: {
       id: 1,
       status: 'active',
-      key: 'license-key-1',
+      key: 'fixture-license-key',
       activationLimit: 5,
       activationUsage: 1,
       expiresAt: null,
@@ -156,7 +157,7 @@ function activationResult(
       storeId: overrides?.meta?.storeId ?? 10,
       productId: overrides?.meta?.productId ?? 20,
       variantId: overrides?.meta?.variantId ?? 30,
-      customerEmail: overrides?.meta?.customerEmail ?? 'buyer@example.com',
+      customerEmail: overrides?.meta?.customerEmail ?? 'fixture@example.invalid',
       customerName: 'Buyer',
     },
   }
@@ -175,7 +176,7 @@ function validationResult(
     licenseKey: {
       id: 1,
       status: overrides?.licenseKey?.status ?? 'active',
-      key: 'license-key-1',
+      key: 'fixture-license-key',
       activationLimit: 5,
       activationUsage: 1,
       expiresAt: null,
@@ -189,7 +190,7 @@ function validationResult(
       storeId: 10,
       productId: 20,
       variantId: 30,
-      customerEmail: 'buyer@example.com',
+      customerEmail: 'fixture@example.invalid',
       customerName: 'Buyer',
     },
   }
@@ -199,8 +200,8 @@ function storedLicense(overrides?: Partial<StoredMovePathLicense>): StoredMovePa
   return {
     schemaVersion: 2,
     plan: 'plus',
-    purchaseEmail: 'buyer@example.com',
-    licenseKey: 'license-key-1',
+    purchaseEmail: 'fixture@example.invalid',
+    licenseKey: 'fixture-license-key',
     installationId: 'installation-1',
     instanceId: 'instance-1',
     instanceName: 'MovePath Browser abcd1234',

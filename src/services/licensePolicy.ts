@@ -160,6 +160,9 @@ function mapApiError(error: string | null, status: string | null): LicenseFailur
 }
 
 function userMessage(error: string | null) {
+  if ((error || '').toLowerCase().includes('activation limit')) {
+    return `This license has reached its activation limit. Deactivate MovePath Plus on an older browser or device, then try again. If you no longer have access to that browser, contact support for assistance: ${monetizationConfig.supportEmail}.`
+  }
   if (!error) return 'The license could not be verified.'
   return error
 }
